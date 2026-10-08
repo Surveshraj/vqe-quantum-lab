@@ -1,39 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer utilities {
-    .animate-spin-slow {
-        animation: spin 12s linear infinite;
-    }
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Background Grid */
-.quantum-grid {
-    background-size: 40px 40px;
-    background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
 /* Glassmorphism Cards */
 .glass-card {
-    background: rgba(15, 23, 42, 0.75);
+    background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 1rem;
     box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s ease;
 }
 
 .glass-card:hover {
-    border-color: rgba(6, 182, 212, 0.25);
+    border-color: rgba(6, 182, 212, 0.3);
 }
 
 /* Navigation Tabs */
@@ -46,25 +23,26 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: #94a3b8;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .nav-tab:hover {
     color: #f8fafc;
-    background: rgba(30, 41, 59, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .active-tab {
     color: #06b6d4 !important;
-    background: rgba(6, 182, 212, 0.1) !important;
-    border-color: rgba(6, 182, 212, 0.3) !important;
-    box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+    background: rgba(6, 182, 212, 0.12) !important;
+    border-color: rgba(6, 182, 212, 0.4) !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
 }
 
-/* Molecule Selector Buttons */
+/* Molecule Buttons */
 .mol-btn {
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
@@ -82,8 +60,8 @@
 
 .active-mol-btn {
     border-color: #06b6d4 !important;
-    background: rgba(6, 182, 212, 0.12) !important;
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+    background: rgba(6, 182, 212, 0.15) !important;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
 }
 
 /* Custom Input Sliders */
@@ -108,20 +86,4 @@ input[type=range]::-webkit-slider-thumb {
 
 input[type=range]::-webkit-slider-thumb:hover {
     transform: scale(1.2);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-::-webkit-scrollbar-track {
-    background: #090d16;
-}
-::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #334155;
 }
