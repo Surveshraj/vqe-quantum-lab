@@ -1,4 +1,4 @@
-// VQE Quantum Simulation Engine (Live Dynamic Slider & Calculation Updates)
+// VQE Quantum Simulation Engine (Cache-Busted v2)
 
 const state = {
     molecule: 'H2',
@@ -13,7 +13,6 @@ const state = {
     optimizerChart: null
 };
 
-// Accurate STO-3G Molecular Potential Energy Surface Physics
 const MOLECULES = {
     H2: {
         name: 'H₂ (Hydrogen)',
@@ -24,12 +23,8 @@ const MOLECULES = {
         getIntegrals: (r, opt = 'SLSQP') => {
             const scale = 0.735 / r;
             const nuc = 0.713753 * scale;
-            
-            // Morse-like Fitted Electronic Ground State Energy for H2 (Hartree)
-            // Minimum at r = 0.735 Å (-1.358828 Ha)
             const eExact = -1.1373 - (0.9352 / r) + (0.5230 / (r * r)) + (0.015 * Math.pow(r - 0.735, 2));
             
-            // Optimizer noise & accuracy model
             let optError = 0.0000002;
             if (opt === 'COBYLA') optError = 0.0000015;
             if (opt === 'SPSA') optError = 0.000712;
@@ -47,10 +42,7 @@ const MOLECULES = {
         getIntegrals: (r, opt = 'SLSQP') => {
             const scale = 1.595 / r;
             const nuc = 0.992224 * scale;
-            const core = -6.822838; // 1s frozen core shift
-            
-            // Active Space Ground State Energy for LiH (Hartree)
-            // Minimum at r = 1.595 Å (-7.908985 Ha)
+            const core = -6.822838;
             const eExact = core - 2.07837 + (0.9922 / r) + (0.045 * Math.pow(r - 1.595, 2));
             
             let optError = 0.000001;
@@ -64,6 +56,16 @@ const MOLECULES = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Attach explicit Slider Listeners
+    const slider = document.getElementById('slider-distance');
+    if (slider) {
+        const handleSliderChange = (e) => {
+            updateDistance(e.target.value);
+        };
+        slider.addEventListener('input', handleSliderChange);
+        slider.addEventListener('change', handleSliderChange);
+    }
+
     renderMoleculeCanvas();
     initPESChart();
     initOptimizerChart();
@@ -107,24 +109,20 @@ function setMolecule(molKey) {
     recalculatePES();
 }
 
-// Live Distance Slider Update
 function updateDistance(val) {
     state.distance = parseFloat(val);
     const valDist = document.getElementById('val-distance');
     if (valDist) valDist.innerText = `${state.distance.toFixed(3)} Å`;
-    
-    // Live real-time updates while sliding!
+
     renderMoleculeCanvas();
     runSimulation();
 }
 
-// Live Optimizer Dropdown Update
 function updateOptimizer(optName) {
     state.optimizer = optName;
     runSimulation();
 }
 
-// Main Simulation Runner (called on slider drag, dropdown change, or button click)
 function runSimulation() {
     const mol = MOLECULES[state.molecule];
     const { nuc, eExact, eVqe } = mol.getIntegrals(state.distance, state.optimizer);
@@ -136,7 +134,6 @@ function runSimulation() {
     const errHartree = Math.abs(eVqe - eExact);
     const errKcal = errHartree * 627.509;
 
-    // Update Geometry Labels
     const rInfo = document.getElementById('lbl-r-info');
     if (rInfo) rInfo.innerText = `${state.distance.toFixed(3)} Å`;
 
@@ -146,7 +143,6 @@ function runSimulation() {
     const atomsInfo = document.getElementById('lbl-atoms-info');
     if (atomsInfo) atomsInfo.innerText = mol.atoms.join(' - ');
 
-    // Update Numerical Energy Results (Live!)
     const exactE = document.getElementById('res-exact-energy');
     if (exactE) exactE.innerText = `${eExact.toFixed(6)} Ha`;
 
@@ -156,7 +152,6 @@ function runSimulation() {
     const errVal = document.getElementById('res-error-val');
     if (errVal) errVal.innerHTML = `${errHartree.toFixed(8)} Ha <span class="text-xs font-normal text-slate-500">(${errKcal.toFixed(4)} kcal/mol)</span>`;
 
-    // Chemical Accuracy Status Badge
     const badge = document.getElementById('badge-accuracy');
     if (badge) {
         if (errKcal < 1.0) {
@@ -169,7 +164,6 @@ function runSimulation() {
     }
 }
 
-// Interactive 2D Chemical Canvas Renderer
 function renderMoleculeCanvas() {
     const svg = document.getElementById('mol-svg');
     if (!svg) return;
@@ -189,23 +183,19 @@ function renderMoleculeCanvas() {
     const atom2X = (width / 2) + (distPx / 2);
 
     svg.innerHTML = `
-        <!-- Spring Bond Line -->
         <line x1="${atom1X}" y1="${centerY}" x2="${atom2X}" y2="${centerY}" 
               stroke="#0f172a" stroke-width="3" stroke-dasharray="6,4" opacity="0.7" />
         
-        <!-- Distance Indicator Pill -->
         <rect x="${(width/2) - 45}" y="${centerY - 28}" width="90" height="20" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" />
         <text x="${width/2}" y="${centerY - 14}" text-anchor="middle" fill="#0f172a" font-size="10" font-family="monospace" font-weight="bold">
             R = ${state.distance.toFixed(3)} Å
         </text>
 
-        <!-- Atom 1 -->
         <circle cx="${atom1X}" cy="${centerY}" r="${mol.radii[0]}" fill="${mol.colors[0]}" stroke="#ffffff" stroke-width="2" />
         <text x="${atom1X}" y="${centerY + 4}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold" font-family="sans-serif">
             ${mol.atoms[0]}
         </text>
 
-        <!-- Atom 2 -->
         <circle cx="${atom2X}" cy="${centerY}" r="${mol.radii[1]}" fill="${mol.colors[1]}" stroke="#ffffff" stroke-width="2" />
         <text x="${atom2X}" y="${centerY + 4}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold" font-family="sans-serif">
             ${mol.atoms[1]}
@@ -213,7 +203,6 @@ function renderMoleculeCanvas() {
     `;
 }
 
-// Quantum Circuit Renderer
 function renderCircuitDiagram() {
     const container = document.getElementById('circuit-diagram-container');
     if (!container) return;
@@ -404,7 +393,7 @@ function initOptimizerChart() {
                     ticks: { color: '#0f172a' }
                 },
                 y: {
-                    title: { display: true, text: 'Energy (Hartree)', color: '#475569' },
+                    title: { display: true, text: 'Ground State Energy (Hartree)', color: '#475569' },
                     grid: { color: '#e2e8f0' },
                     ticks: { color: '#0f172a' }
                 }
