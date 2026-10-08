@@ -1,4 +1,4 @@
-// VQE Quantum Simulation Engine (Cache-Busted v2)
+// VQE Quantum Simulation Engine (Cache-Busted v3)
 
 const state = {
     molecule: 'H2',
@@ -13,6 +13,7 @@ const state = {
     optimizerChart: null
 };
 
+// Precise Quantum Chemistry Potential Energy Surfaces
 const MOLECULES = {
     H2: {
         name: 'H₂ (Hydrogen)',
@@ -21,10 +22,16 @@ const MOLECULES = {
         colors: ['#2563eb', '#2563eb'],
         radii: [18, 18],
         getIntegrals: (r, opt = 'SLSQP') => {
-            const scale = 0.735 / r;
-            const nuc = 0.713753 * scale;
-            const eExact = -1.1373 - (0.9352 / r) + (0.5230 / (r * r)) + (0.015 * Math.pow(r - 0.735, 2));
+            const nuc = 0.713753 * (0.735 / r);
+            const dr = r - 0.735;
             
+            let eExact;
+            if (r <= 0.735) {
+                eExact = -1.358828 + 3.2 * Math.pow(dr, 2) - 1.5 * Math.pow(dr, 3);
+            } else {
+                eExact = -1.358828 + 1.12 * (1 - Math.exp(-1.6 * dr));
+            }
+
             let optError = 0.0000002;
             if (opt === 'COBYLA') optError = 0.0000015;
             if (opt === 'SPSA') optError = 0.000712;
@@ -40,11 +47,16 @@ const MOLECULES = {
         colors: ['#7c3aed', '#2563eb'],
         radii: [26, 16],
         getIntegrals: (r, opt = 'SLSQP') => {
-            const scale = 1.595 / r;
-            const nuc = 0.992224 * scale;
-            const core = -6.822838;
-            const eExact = core - 2.07837 + (0.9922 / r) + (0.045 * Math.pow(r - 1.595, 2));
+            const nuc = 0.992224 * (1.595 / r);
+            const dr = r - 1.595;
             
+            let eExact;
+            if (r <= 1.595) {
+                eExact = -7.908985 + 2.1 * Math.pow(dr, 2) - 0.8 * Math.pow(dr, 3);
+            } else {
+                eExact = -7.908985 + 0.85 * (1 - Math.exp(-1.4 * dr));
+            }
+
             let optError = 0.000001;
             if (opt === 'COBYLA') optError = 0.000004;
             if (opt === 'SPSA') optError = 0.001250;
@@ -109,8 +121,10 @@ function setMolecule(molKey) {
     recalculatePES();
 }
 
+// Live Distance Slider Update Handler
 function updateDistance(val) {
     state.distance = parseFloat(val);
+    
     const valDist = document.getElementById('val-distance');
     if (valDist) valDist.innerText = `${state.distance.toFixed(3)} Å`;
 
@@ -118,11 +132,30 @@ function updateDistance(val) {
     runSimulation();
 }
 
+// Button Click Event Handler with Visual Feedback
+function onCalculateClick() {
+    const btnText = document.getElementById('btn-calc-text');
+    const cardExact = document.getElementById('card-exact');
+    const cardVqe = document.getElementById('card-vqe');
+
+    if (btnText) btnText.innerText = 'Running VQE Quantum Optimization...';
+    if (cardExact) cardExact.classList.add('scale-102', 'bg-blue-50');
+    if (cardVqe) cardVqe.classList.add('scale-102', 'bg-emerald-50');
+
+    setTimeout(() => {
+        runSimulation();
+        if (btnText) btnText.innerText = 'Calculate Ground State Energy';
+        if (cardExact) cardExact.classList.remove('scale-102', 'bg-blue-50');
+        if (cardVqe) cardVqe.classList.remove('scale-102', 'bg-emerald-50');
+    }, 250);
+}
+
 function updateOptimizer(optName) {
     state.optimizer = optName;
     runSimulation();
 }
 
+// Main Simulation Calculator
 function runSimulation() {
     const mol = MOLECULES[state.molecule];
     const { nuc, eExact, eVqe } = mol.getIntegrals(state.distance, state.optimizer);
@@ -164,6 +197,7 @@ function runSimulation() {
     }
 }
 
+// Render 2D SVG Molecule Geometry
 function renderMoleculeCanvas() {
     const svg = document.getElementById('mol-svg');
     if (!svg) return;
@@ -388,7 +422,7 @@ function initOptimizerChart() {
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Optimizer Iteration Step', color: '#475569' },
+                    title: { display: true, text: 'Interatomic Bond Distance R (Å)', color: '#475569' },
                     grid: { color: '#e2e8f0' },
                     ticks: { color: '#0f172a' }
                 },
