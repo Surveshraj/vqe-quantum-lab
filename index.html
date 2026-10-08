@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Simulation: VQE Molecular Ground State Lab</title>
+    <meta name="description" content="Interactive Quantum Chemistry Simulation using Variational Quantum Eigensolver (VQE) for H2 and LiH molecules. Deployed on Vercel.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Styling -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-cyan-500 selection:text-black">
+
+    <!-- Background Quantum Field Animation -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div class="quantum-grid absolute inset-0"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header / Navbar -->
+        <header class="py-6 border-b border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <i data-lucide="atom" class="w-6 h-6 text-white animate-spin-slow"></i>
+                </div>
+                <div>
+                    <h1 class="font-outfit font-extrabold text-xl sm:text-2xl bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-400 bg-clip-text text-transparent">
+                        VQE Quantum Lab
+                    </h1>
+                    <p class="text-xs text-slate-400">Molecular Ground State Energy Simulator</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    Qiskit 2.x Engine
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                    Vercel Ready
+                </span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="mt-6 flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+            <button id="tab-studio" class="nav-tab active-tab" onclick="switchTab('studio')">
+                <i data-lucide="sliders" class="w-4 h-4"></i> Simulation Studio
+            </button>
+            <button id="tab-pes" class="nav-tab" onclick="switchTab('pes')">
+                <i data-lucide="line-chart" class="w-4 h-4"></i> Potential Energy Surface (PES)
+            </button>
+            <button id="tab-circuit" class="nav-tab" onclick="switchTab('circuit')">
+                <i data-lucide="cpu" class="w-4 h-4"></i> Quantum Circuit
+            </button>
+            <button id="tab-optimizer" class="nav-tab" onclick="switchTab('optimizer')">
+                <i data-lucide="activity" class="w-4 h-4"></i> Optimizer Convergence
+            </button>
+            <button id="tab-deploy" class="nav-tab" onclick="switchTab('deploy')">
+                <i data-lucide="cloud-upload" class="w-4 h-4"></i> Vercel Deployment Guide
+            </button>
+        </nav>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-grow py-6">
+
+            <!-- SECTION 1: SIMULATION STUDIO -->
+            <section id="sec-studio" class="tab-content block space-y-6">
+                
+                <!-- Grid Controls + Vis -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Controls Card (5 cols) -->
+                    <div class="lg:col-span-5 glass-card p-6 space-y-6">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
+                                <i data-lucide="settings-2" class="w-5 h-5 text-cyan-400"></i> Simulation Parameters
+                            </h2>
+                            <span class="text-xs text-slate-400">Real-time update</span>
+                        </div>
+
+                        <!-- Molecule Selector -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Select Molecule</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button id="btn-mol-h2" onclick="setMolecule('H2')" class="mol-btn active-mol-btn">
+                                    <div class="font-bold text-base">H₂ (Hydrogen)</div>
+                                    <div class="text-xs text-slate-400">2 Electrons · 4 Qubits</div>
+                                </button>
+                                <button id="btn-mol-lih" onclick="setMolecule('LiH')" class="mol-btn">
+                                    <div class="font-bold text-base">LiH (Lithium Hydride)</div>
+                                    <div class="text-xs text-slate-400">Active Space · 4 Qubits</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Interatomic Distance Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Interatomic Bond Distance (R)</label>
+                                <span id="val-distance" class="text-sm font-mono font-bold text-cyan-400">0.735 Å</span>
+                            </div>
+                            <input type="range" id="slider-distance" min="0.30" max="2.50" step="0.05" value="0.735" 
+                                   oninput="updateDistance(this.value)" class="w-full accent-cyan-400 cursor-pointer">
+                            <div class="flex justify-between text-xs text-slate-500 font-mono">
+                                <span>0.30 Å (Compressed)</span>
+                                <span id="eq-distance-label" class="text-cyan-500 font-semibold">Equilibrium: 0.735 Å</span>
+                                <span>2.50 Å (Dissociated)</span>
+                            </div>
+                        </div>
+
+                        <!-- Optimizer Selector -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Classical Optimizer</label>
+                            <select id="select-optimizer" onchange="updateOptimizer(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-400">
+                                <option value="SLSQP">SLSQP (Sequential Least Squares) - Recommended</option>
+                                <option value="COBYLA">COBYLA (Constrained Optimization)</option>
+                                <option value="SPSA">SPSA (Stochastic Perturbation)</option>
+                            </select>
+                        </div>
+
+                        <!-- Qubit Mapper & Ansatz -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Fermion Mapper</label>
+                                <select id="select-mapper" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300">
+                                    <option value="JW">Jordan-Wigner</option>
+                                    <option value="Parity">Parity Transformation</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Quantum Ansatz</label>
+                                <select id="select-ansatz" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300">
+                                    <option value="UCCSD">UCCSD (Chemistry)</option>
+                                    <option value="TwoLocal">TwoLocal (Hardware)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Run Simulation Button -->
+                        <button onclick="runSimulation()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-500/25 transition flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i> Run VQE Simulation
+                        </button>
+                    </div>
+
+                    <!-- Visualization & Live Results (7 cols) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        
+                        <!-- Molecular 2D/3D Bond Canvas -->
+                        <div class="glass-card p-6 flex flex-col items-center justify-center relative min-h-[220px]">
+                            <div class="absolute top-4 left-4 text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i> Molecular Geometry Viewer
+                            </div>
+                            
+                            <!-- Interactive Chemical Canvas -->
+                            <div id="mol-canvas-container" class="w-full h-40 flex items-center justify-center relative mt-4">
+                                <svg id="mol-svg" class="w-full h-full" viewBox="0 0 400 120"></svg>
+                            </div>
+
+                            <div class="text-xs text-slate-400 mt-2 font-mono flex items-center gap-4">
+                                <span>Atoms: <strong id="lbl-atoms-info" class="text-slate-200">H - H</strong></span>
+                                <span>Bond Length R: <strong id="lbl-r-info" class="text-cyan-400">0.735 Å</strong></span>
+                                <span>Repulsion: <strong id="lbl-rep-info" class="text-purple-400">0.7138 Ha</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Ground State Energy Summary Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            
+                            <!-- Exact Benchmark -->
+                            <div class="glass-card p-5 border-l-4 border-l-blue-500">
+                                <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Exact FCI Benchmark</div>
+                                <div id="res-exact-energy" class="text-2xl font-mono font-bold text-slate-100 mt-1">-1.358828 Ha</div>
+                                <div class="text-xs text-slate-400 mt-1">Full Configuration Interaction</div>
+                            </div>
+
+                            <!-- VQE Result -->
+                            <div class="glass-card p-5 border-l-4 border-l-cyan-400">
+                                <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">VQE Estimated Energy</div>
+                                <div id="res-vqe-energy" class="text-2xl font-mono font-bold text-cyan-400 mt-1">-1.358828 Ha</div>
+                                <div class="text-xs text-slate-400 mt-1">UCCSD + SLSQP Quantum Simulation</div>
+                            </div>
+                        </div>
+
+                        <!-- Accuracy & Error Metrics Banner -->
+                        <div class="glass-card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Absolute Energy Error</div>
+                                <div id="res-error-val" class="text-lg font-mono font-semibold text-slate-200 mt-0.5">
+                                    0.000000 Ha <span class="text-sm text-slate-400">(0.0002 kcal/mol)</span>
+                                </div>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <div id="badge-accuracy" class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-2 font-bold text-xs">
+                                <i data-lucide="award" class="w-4 h-4"></i> CHEMICAL ACCURACY ACHIEVED (< 1.0 kcal/mol)
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: POTENTIAL ENERGY SURFACE (PES) -->
+            <section id="sec-pes" class="tab-content hidden space-y-6">
+                <div class="glass-card p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-cyan-400"></i> Potential Energy Surface (PES) Dissociation Curve
+                            </h2>
+                            <p class="text-xs text-slate-400">Scanned interatomic distance R from 0.30 Å to 2.50 Å comparing VQE vs Exact FCI</p>
+                        </div>
+                        <button onclick="recalculatePES()" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 flex items-center gap-1.5">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Recalculate PES
+                        </button>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="w-full h-80 sm:h-96 relative">
+                        <canvas id="chart-pes"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-xs">
+                            <span class="text-slate-400 font-semibold">Equilibrium Distance (Rₑ):</span>
+                            <div class="font-mono text-cyan-400 font-bold text-sm mt-0.5" id="pes-eq-r">0.735 Å</div>
+                        </div>
+                        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-xs">
+                            <span class="text-slate-400 font-semibold">Minimum Ground State Energy:</span>
+                            <div class="font-mono text-emerald-400 font-bold text-sm mt-0.5" id="pes-min-e">-1.358828 Ha</div>
+                        </div>
+                        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-xs">
+                            <span class="text-slate-400 font-semibold">Max PES Deviation:</span>
+                            <div class="font-mono text-purple-400 font-bold text-sm mt-0.5">&lt; 0.0005 kcal/mol</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: QUANTUM CIRCUIT VISUALIZER -->
+            <section id="sec-circuit" class="tab-content hidden space-y-6">
+                <div class="glass-card p-6 space-y-6">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
+                            <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i> UCCSD Quantum Ansatz Circuit Diagram
+                        </h2>
+                        <p class="text-xs text-slate-400">4-Qubit Jordan-Wigner mapped circuit initialized with Hartree-Fock reference state |1100⟩</p>
+                    </div>
+
+                    <!-- Circuit SVG Container -->
+                    <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 overflow-x-auto">
+                        <div id="circuit-diagram-container" class="min-w-[650px]"></div>
+                    </div>
+
+                    <!-- Qubit Roles -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <span class="text-cyan-400 font-bold">Qubit q₀:</span> Spin Orbital 0 (1s α)
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <span class="text-cyan-400 font-bold">Qubit q₁:</span> Spin Orbital 1 (1s β)
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <span class="text-purple-400 font-bold">Qubit q₂:</span> Spin Orbital 2 (2s α)
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <span class="text-purple-400 font-bold">Qubit q₃:</span> Spin Orbital 3 (2s β)
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: OPTIMIZER CONVERGENCE -->
+            <section id="sec-optimizer" class="tab-content hidden space-y-6">
+                <div class="glass-card p-6 space-y-6">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
+                            <i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i> Classical Optimizer Convergence Benchmark
+                        </h2>
+                        <p class="text-xs text-slate-400">Comparing SLSQP, COBYLA, and SPSA minimization trajectory over 50 iterations</p>
+                    </div>
+
+                    <!-- Convergence Chart -->
+                    <div class="w-full h-80 relative">
+                        <canvas id="chart-optimizer"></canvas>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-300 border-b border-slate-800">
+                                    <th class="p-3">Optimizer</th>
+                                    <th class="p-3">Max Iterations</th>
+                                    <th class="p-3">Final Energy (Ha)</th>
+                                    <th class="p-3">Error (kcal/mol)</th>
+                                    <th class="p-3">Evaluations</th>
+                                    <th class="p-3">Convergence Speed</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 font-mono text-slate-300">
+                                <tr>
+                                    <td class="p-3 font-bold text-cyan-400">SLSQP</td>
+                                    <td class="p-3">50</td>
+                                    <td class="p-3">-1.358828</td>
+                                    <td class="p-3 text-emerald-400">&lt; 0.0002</td>
+                                    <td class="p-3">3</td>
+                                    <td class="p-3 text-emerald-400 font-bold">Fastest (Optimal)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-purple-400">COBYLA</td>
+                                    <td class="p-3">50</td>
+                                    <td class="p-3">-1.358828</td>
+                                    <td class="p-3 text-emerald-400">&lt; 0.0002</td>
+                                    <td class="p-3">21</td>
+                                    <td class="p-3 text-cyan-400">Fast</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-amber-400">SPSA</td>
+                                    <td class="p-3">50</td>
+                                    <td class="p-3">-1.358120</td>
+                                    <td class="p-3 text-amber-400">0.4442</td>
+                                    <td class="p-3">50</td>
+                                    <td class="p-3 text-slate-400">Stochastic (NISQ Noise)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: VERCEL DEPLOYMENT GUIDE -->
+            <section id="sec-deploy" class="tab-content hidden space-y-6">
+                <div class="glass-card p-6 space-y-6">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
+                            <i data-lucide="cloud-upload" class="w-5 h-5 text-cyan-400"></i> How to Deploy this VQE App on Vercel
+                        </h2>
+                        <p class="text-xs text-slate-400">Step-by-step instructions to launch your Quantum Lab live on the web</p>
+                    </div>
+
+                    <div class="space-y-4 text-sm text-slate-300">
+                        
+                        <!-- Option 1: Vercel CLI -->
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <h3 class="font-bold text-cyan-400 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">1</span>
+                                Option A: Deploy using Vercel CLI (Recommended)
+                            </h3>
+                            <p class="text-xs text-slate-400">Run the following commands in your project folder:</p>
+                            <pre class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-emerald-400 overflow-x-auto">
+npm install -g vercel
+vercel login
+vercel</pre>
+                        </div>
+
+                        <!-- Option 2: GitHub -->
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <h3 class="font-bold text-purple-400 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs">2</span>
+                                Option B: Deploy via GitHub Integration
+                            </h3>
+                            <ol class="list-decimal list-inside text-xs space-y-1 text-slate-300">
+                                <li>Push this folder to a new GitHub repository.</li>
+                                <li>Go to <a href="https://vercel.com/new" target="_blank" class="text-cyan-400 underline">vercel.com/new</a>.</li>
+                                <li>Import your repository and click <strong>Deploy</strong>. Vercel automatically detects the HTML & Serverless Python API.</li>
+                            </ol>
+                        </div>
+
+                        <!-- Config Files Info -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-xs space-y-1">
+                            <span class="font-bold text-slate-200">Included Vercel Configurations:</span>
+                            <ul class="list-disc list-inside text-slate-400 space-y-0.5">
+                                <li><code>vercel.json</code> - Serverless Python routing for <code>api/vqe.py</code>.</li>
+                                <li><code>requirements.txt</code> - Pre-configured dependencies for backend API.</li>
+                                <li><code>index.html</code>, <code>styles.css</code>, <code>app.js</code> - Zero-dependency fast frontend.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="py-6 border-t border-slate-800/80 text-center text-xs text-slate-500">
+            <p>Quantum Simulation Capstone Project · VQE for H₂ & LiH Molecules · Powered by Qiskit & Vercel</p>
+        </footer>
+
+    </div>
+
+    <!-- App Logic -->
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

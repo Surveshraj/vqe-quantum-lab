@@ -1,0 +1,12 @@
+{
+  "name": "vqe-quantum-simulation-lab",
+  "version": "1.0.0",
+  "description": "Interactive Quantum Chemistry Simulation Web App for VQE on Vercel",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["quantum-computing", "vqe", "qiskit", "quantum-chemistry", "vercel"],
+  "author": "Quantum Capstone Project",
+  "license": "MIT"
+}

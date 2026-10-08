@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "name": "vqe-quantum-simulation-lab",
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "api/vqe.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/vqe", "dest": "api/vqe.py" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
