@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum VQE Molecule Simulation Lab</title>
+    <title>Quantum VQE Simulation</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,171 +15,144 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-cyan-500 selection:text-black">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen selection:bg-slate-900 selection:text-white">
 
-    <!-- Quantum Field Glow -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-20">
-        <div class="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/30 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"></div>
-    </div>
-
-    <div class="relative z-10 flex flex-col min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col min-h-screen">
         
-        <!-- Header -->
-        <header class="py-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- Clean White Header -->
+        <header class="py-4 border-b border-slate-200 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                    <i data-lucide="atom" class="w-6 h-6 text-white"></i>
+                <div class="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg">
+                    ⚛
                 </div>
                 <div>
-                    <h1 class="font-outfit font-extrabold text-2xl bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-400 bg-clip-text text-transparent">
-                        VQE Quantum Lab
-                    </h1>
-                    <p class="text-xs text-slate-400">Ground State Energy Estimator · H₂ & LiH</p>
+                    <h1 class="font-bold text-xl text-slate-900">VQE Quantum Simulation Lab</h1>
+                    <p class="text-xs text-slate-500">Ground State Energy Estimator</p>
                 </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                    Qiskit 2.x Engine
-                </span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Chemical Accuracy Verified
-                </span>
             </div>
         </header>
 
-        <!-- Main Navigation Tabs -->
-        <nav class="mt-6 flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+        <!-- Clean Navigation Tabs -->
+        <nav class="mt-6 flex gap-2 border-b border-slate-200 pb-3">
             <button id="tab-studio" class="nav-tab active-tab" onclick="switchTab('studio')">
-                <i data-lucide="sliders" class="w-4 h-4"></i> Simulation Studio
+                Simulation Studio
             </button>
             <button id="tab-pes" class="nav-tab" onclick="switchTab('pes')">
-                <i data-lucide="line-chart" class="w-4 h-4"></i> Dissociation Curve (PES)
+                Dissociation Curve (PES)
             </button>
             <button id="tab-circuit" class="nav-tab" onclick="switchTab('circuit')">
-                <i data-lucide="cpu" class="w-4 h-4"></i> Quantum Circuit
+                Quantum Circuit
             </button>
             <button id="tab-optimizer" class="nav-tab" onclick="switchTab('optimizer')">
-                <i data-lucide="activity" class="w-4 h-4"></i> Optimizer Benchmark
+                Optimizer Benchmark
             </button>
         </nav>
 
-        <!-- Main Container -->
+        <!-- Main Content -->
         <main class="flex-grow py-6">
 
             <!-- TAB 1: SIMULATION STUDIO -->
-            <section id="sec-studio" class="tab-content block space-y-6">
-                
+            <section id="sec-studio" class="tab-content block">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
-                    <!-- Control Panel (5 cols) -->
-                    <div class="lg:col-span-5 glass-card p-6 space-y-6">
+                    <!-- Controls (5 cols) -->
+                    <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
                         
-                        <div class="border-b border-slate-800 pb-3">
-                            <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
-                                <i data-lucide="settings-2" class="w-5 h-5 text-cyan-400"></i> Control Panel
-                            </h2>
-                        </div>
+                        <h2 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-3">
+                            Control Panel
+                        </h2>
 
                         <!-- Molecule Selector -->
                         <div class="space-y-2">
-                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">1. Select Target Molecule</label>
+                            <label class="text-xs font-semibold text-slate-600">Molecule</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <button type="button" id="btn-mol-h2" onclick="setMolecule('H2')" class="mol-btn active-mol-btn">
-                                    <div class="font-bold text-base text-slate-100">H₂ (Hydrogen)</div>
-                                    <div class="text-xs text-slate-400">2 Electrons · 4 Qubits</div>
+                                    <div class="font-bold text-sm">H₂ (Hydrogen)</div>
+                                    <div class="text-xs text-slate-500">2 Electrons · 4 Qubits</div>
                                 </button>
                                 <button type="button" id="btn-mol-lih" onclick="setMolecule('LiH')" class="mol-btn">
-                                    <div class="font-bold text-base text-slate-100">LiH (Lithium Hydride)</div>
-                                    <div class="text-xs text-slate-400">Active Space · 4 Qubits</div>
+                                    <div class="font-bold text-sm">LiH (Lithium Hydride)</div>
+                                    <div class="text-xs text-slate-500">Active Space · 4 Qubits</div>
                                 </button>
                             </div>
                         </div>
 
                         <!-- Bond Distance Slider -->
                         <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">2. Interatomic Bond Distance (R)</label>
-                                <span id="val-distance" class="text-sm font-mono font-bold text-cyan-400">0.735 Å</span>
+                            <div class="flex justify-between items-center text-xs">
+                                <label class="font-semibold text-slate-600">Bond Distance (R)</label>
+                                <span id="val-distance" class="font-mono font-bold text-slate-900">0.735 Å</span>
                             </div>
                             <input type="range" id="slider-distance" min="0.30" max="2.50" step="0.05" value="0.735" 
-                                   oninput="updateDistance(this.value)" class="w-full accent-cyan-400 cursor-pointer">
-                            <div class="flex justify-between text-xs text-slate-500 font-mono">
-                                <span>0.30 Å (Compressed)</span>
-                                <span id="eq-distance-label" class="text-cyan-400 font-bold">Equilibrium: 0.735 Å</span>
-                                <span>2.50 Å (Dissociated)</span>
-                            </div>
+                                   oninput="updateDistance(this.value)" class="w-full accent-slate-900 cursor-pointer">
                         </div>
 
-                        <!-- Classical Optimizer Selector -->
+                        <!-- Classical Optimizer -->
                         <div class="space-y-2">
-                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">3. Classical Optimizer</label>
-                            <select id="select-optimizer" onchange="updateOptimizer(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400">
-                                <option value="SLSQP">SLSQP (Sequential Least Squares) - Fast & Exact</option>
+                            <label class="text-xs font-semibold text-slate-600">Optimizer</label>
+                            <select id="select-optimizer" onchange="updateOptimizer(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-slate-900">
+                                <option value="SLSQP">SLSQP (Sequential Least Squares)</option>
                                 <option value="COBYLA">COBYLA (Constrained Optimization)</option>
                                 <option value="SPSA">SPSA (Stochastic Perturbation)</option>
                             </select>
                         </div>
 
-                        <!-- Execute Button -->
-                        <button type="button" onclick="runSimulation()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
-                            <i data-lucide="play" class="w-4 h-4 fill-current"></i> Calculate Ground State Energy
+                        <!-- Run Button -->
+                        <button type="button" onclick="runSimulation()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow transition cursor-pointer">
+                            Calculate Ground State Energy
                         </button>
 
                     </div>
 
-                    <!-- Live Results & Viewer (7 cols) -->
+                    <!-- Viewer & Results (7 cols) -->
                     <div class="lg:col-span-7 space-y-6">
                         
-                        <!-- 2D Chemical Geometry Canvas -->
-                        <div class="glass-card p-6 flex flex-col items-center justify-center relative min-h-[220px]">
-                            <div class="absolute top-4 left-4 text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                                <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i> Molecular Bond Geometry
+                        <!-- Geometry Viewer -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center relative min-h-[200px]">
+                            <div class="absolute top-4 left-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                Molecular Geometry
                             </div>
                             
-                            <div id="mol-canvas-container" class="w-full h-40 flex items-center justify-center relative mt-4">
+                            <div id="mol-canvas-container" class="w-full h-36 flex items-center justify-center relative mt-3">
                                 <svg id="mol-svg" class="w-full h-full" viewBox="0 0 400 120"></svg>
                             </div>
 
-                            <div class="text-xs text-slate-400 font-mono flex items-center gap-6 mt-2">
-                                <span>Atoms: <strong id="lbl-atoms-info" class="text-slate-100">H - H</strong></span>
-                                <span>Bond R: <strong id="lbl-r-info" class="text-cyan-400">0.735 Å</strong></span>
-                                <span>Repulsion Energy: <strong id="lbl-rep-info" class="text-purple-400">0.7138 Ha</strong></span>
+                            <div class="text-xs text-slate-600 font-mono flex items-center gap-6 mt-1">
+                                <span>Atoms: <strong id="lbl-atoms-info" class="text-slate-900">H - H</strong></span>
+                                <span>Bond R: <strong id="lbl-r-info" class="text-slate-900">0.735 Å</strong></span>
+                                <span>Repulsion: <strong id="lbl-rep-info" class="text-slate-900">0.7138 Ha</strong></span>
                             </div>
                         </div>
 
-                        <!-- Energy Results Cards -->
+                        <!-- Results Cards -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="glass-card p-5 border-l-4 border-l-blue-500">
-                                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Exact FCI Benchmark Energy</div>
-                                <div id="res-exact-energy" class="text-2xl font-mono font-bold text-slate-100 mt-1">-1.358828 Ha</div>
-                                <div class="text-xs text-slate-400 mt-1">Full Configuration Interaction</div>
+                            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm border-l-4 border-l-blue-600">
+                                <div class="text-xs font-semibold text-slate-500 uppercase">Exact FCI Benchmark</div>
+                                <div id="res-exact-energy" class="text-2xl font-mono font-bold text-slate-900 mt-1">-1.358828 Ha</div>
                             </div>
 
-                            <div class="glass-card p-5 border-l-4 border-l-cyan-400">
-                                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">VQE Estimated Energy</div>
-                                <div id="res-vqe-energy" class="text-2xl font-mono font-bold text-cyan-400 mt-1">-1.358828 Ha</div>
-                                <div class="text-xs text-slate-400 mt-1">UCCSD Quantum Simulation</div>
+                            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm border-l-4 border-l-emerald-600">
+                                <div class="text-xs font-semibold text-slate-500 uppercase">VQE Estimated Energy</div>
+                                <div id="res-vqe-energy" class="text-2xl font-mono font-bold text-emerald-700 mt-1">-1.358828 Ha</div>
                             </div>
                         </div>
 
-                        <!-- Accuracy Metric Banner -->
-                        <div class="glass-card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <!-- Error Status -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div>
-                                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Absolute Simulation Error</div>
-                                <div id="res-error-val" class="text-lg font-mono font-bold text-slate-100 mt-0.5">
-                                    0.000000 Ha <span class="text-sm font-normal text-slate-400">(0.0002 kcal/mol)</span>
+                                <div class="text-xs text-slate-500 font-semibold uppercase">Simulation Error</div>
+                                <div id="res-error-val" class="text-base font-mono font-bold text-slate-900 mt-0.5">
+                                    0.000000 Ha <span class="text-xs font-normal text-slate-500">(0.0002 kcal/mol)</span>
                                 </div>
                             </div>
 
-                            <div id="badge-accuracy" class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center gap-2">
-                                <i data-lucide="award" class="w-4 h-4"></i> CHEMICAL ACCURACY ACHIEVED (&lt; 1.0 kcal/mol)
+                            <div id="badge-accuracy" class="px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs">
+                                Chemical Accuracy Achieved (&lt; 1.0 kcal/mol)
                             </div>
                         </div>
 
@@ -189,50 +162,36 @@
 
             </section>
 
-            <!-- TAB 2: DISSOCIATION CURVE (PES) -->
-            <section id="sec-pes" class="tab-content hidden space-y-6">
-                <div class="glass-card p-6 space-y-4">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                        <div>
-                            <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
-                                <i data-lucide="line-chart" class="w-5 h-5 text-cyan-400"></i> Potential Energy Surface (PES) Dissociation Curve
-                            </h2>
-                            <p class="text-xs text-slate-400">Energy vs Interatomic Bond Distance R (0.30 Å to 2.50 Å)</p>
-                        </div>
-                    </div>
-
-                    <div class="w-full h-80 sm:h-96 relative">
+            <!-- TAB 2: PES CURVE -->
+            <section id="sec-pes" class="tab-content hidden">
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h2 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-3">
+                        Potential Energy Surface (PES) Dissociation Curve
+                    </h2>
+                    <div class="w-full h-80 relative">
                         <canvas id="chart-pes"></canvas>
                     </div>
                 </div>
             </section>
 
             <!-- TAB 3: QUANTUM CIRCUIT -->
-            <section id="sec-circuit" class="tab-content hidden space-y-6">
-                <div class="glass-card p-6 space-y-6">
-                    <div class="border-b border-slate-800 pb-3">
-                        <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
-                            <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i> UCCSD Quantum Circuit Architecture
-                        </h2>
-                        <p class="text-xs text-slate-400">4-Qubit Jordan-Wigner mapped ansatz initialized with Hartree-Fock reference state |1100⟩</p>
-                    </div>
-
-                    <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 overflow-x-auto">
+            <section id="sec-circuit" class="tab-content hidden">
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h2 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-3">
+                        UCCSD Quantum Circuit Architecture
+                    </h2>
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 overflow-x-auto">
                         <div id="circuit-diagram-container" class="min-w-[650px]"></div>
                     </div>
                 </div>
             </section>
 
             <!-- TAB 4: OPTIMIZER BENCHMARK -->
-            <section id="sec-optimizer" class="tab-content hidden space-y-6">
-                <div class="glass-card p-6 space-y-6">
-                    <div class="border-b border-slate-800 pb-3">
-                        <h2 class="font-outfit font-bold text-lg text-slate-100 flex items-center gap-2">
-                            <i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i> Classical Optimizer Convergence Trajectory
-                        </h2>
-                        <p class="text-xs text-slate-400">Comparing SLSQP, COBYLA, and SPSA minimizers over 50 iterations</p>
-                    </div>
-
+            <section id="sec-optimizer" class="tab-content hidden">
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h2 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-3">
+                        Classical Optimizer Trajectory
+                    </h2>
                     <div class="w-full h-80 relative">
                         <canvas id="chart-optimizer"></canvas>
                     </div>
@@ -241,8 +200,8 @@
 
         </main>
 
-        <footer class="py-6 border-t border-slate-800 text-center text-xs text-slate-500">
-            <p>Quantum Simulation Capstone Project · VQE for H₂ & LiH Molecules · Powered by Qiskit & Vercel</p>
+        <footer class="py-4 border-t border-slate-200 text-center text-xs text-slate-400">
+            Quantum VQE Simulation Project · H₂ & LiH Molecules
         </footer>
 
     </div>
