@@ -482,36 +482,112 @@
 
             const mol = MOLECULES[state.molecule];
             const width = 400;
-            const height = 120;
-            const centerY = height / 2;
+            const height = 150;
+            const centerY = height / 2 + 5;
 
             const minR = 0.30;
             const maxR = 2.50;
             const minPx = 90;
-            const maxPx = 290;
+            const maxPx = 280;
             const distPx = minPx + ((state.distance - minR) / (maxR - minR)) * (maxPx - minPx);
 
             const atom1X = (width / 2) - (distPx / 2);
             const atom2X = (width / 2) + (distPx / 2);
 
+            const r1 = mol.radii[0] + 4;
+            const r2 = mol.radii[1] + 4;
+            const atom1Type = mol.atoms[0].toLowerCase();
+            const atom2Type = mol.atoms[1].toLowerCase();
+
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
             svg.innerHTML = `
-                <line x1="${atom1X}" y1="${centerY}" x2="${atom2X}" y2="${centerY}" 
-                      stroke="#0f172a" stroke-width="3" stroke-dasharray="6,4" opacity="0.7" />
-                
-                <rect x="${(width/2) - 45}" y="${centerY - 28}" width="90" height="20" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" />
-                <text x="${width/2}" y="${centerY - 14}" text-anchor="middle" fill="#0f172a" font-size="10" font-family="monospace" font-weight="bold">
-                    R = ${state.distance.toFixed(3)} Å
-                </text>
+                <defs>
+                    <!-- Ground Shadow Gradient -->
+                    <radialGradient id="ground-shadow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#0f172a" stop-opacity="0.35" />
+                        <stop offset="100%" stop-color="#0f172a" stop-opacity="0.0" />
+                    </radialGradient>
 
-                <circle cx="${atom1X}" cy="${centerY}" r="${mol.radii[0]}" fill="${mol.colors[0]}" stroke="#ffffff" stroke-width="2" />
-                <text x="${atom1X}" y="${centerY + 4}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold" font-family="sans-serif">
-                    ${mol.atoms[0]}
-                </text>
+                    <!-- 3D Bond Cylinder Gradient -->
+                    <linearGradient id="bond-cylinder" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#94a3b8" />
+                        <stop offset="25%" stop-color="#ffffff" />
+                        <stop offset="60%" stop-color="#64748b" />
+                        <stop offset="100%" stop-color="#334155" />
+                    </linearGradient>
 
-                <circle cx="${atom2X}" cy="${centerY}" r="${mol.radii[1]}" fill="${mol.colors[1]}" stroke="#ffffff" stroke-width="2" />
-                <text x="${atom2X}" y="${centerY + 4}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold" font-family="sans-serif">
-                    ${mol.atoms[1]}
-                </text>
+                    <!-- 3D Hydrogen Sphere (H) -->
+                    <radialGradient id="sphere-h" cx="32%" cy="32%" r="68%">
+                        <stop offset="0%" stop-color="#bfdbfe" />
+                        <stop offset="25%" stop-color="#3b82f6" />
+                        <stop offset="65%" stop-color="#1d4ed8" />
+                        <stop offset="100%" stop-color="#0f172a" />
+                    </radialGradient>
+
+                    <!-- 3D Lithium Sphere (Li) -->
+                    <radialGradient id="sphere-li" cx="32%" cy="32%" r="68%">
+                        <stop offset="0%" stop-color="#f5d0fe" />
+                        <stop offset="25%" stop-color="#a855f7" />
+                        <stop offset="65%" stop-color="#6b21a8" />
+                        <stop offset="100%" stop-color="#2e1065" />
+                    </radialGradient>
+
+                    <!-- Drop Shadow Filter -->
+                    <filter id="atom-shadow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.35" />
+                    </filter>
+                    
+                    <filter id="glow-halo" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="6" result="blur" />
+                    </filter>
+                </defs>
+
+                <!-- Ground Plane Shadows -->
+                <ellipse cx="${atom1X}" cy="${centerY + r1 + 6}" rx="${r1 * 0.95}" ry="6" fill="url(#ground-shadow)" />
+                <ellipse cx="${atom2X}" cy="${centerY + r2 + 6}" rx="${r2 * 0.95}" ry="6" fill="url(#ground-shadow)" />
+
+                <!-- Outer Electron Cloud Halos -->
+                <circle cx="${atom1X}" cy="${centerY}" r="${r1 + 8}" fill="${atom1Type === 'li' ? '#a855f7' : '#3b82f6'}" opacity="0.25" filter="url(#glow-halo)" />
+                <circle cx="${atom2X}" cy="${centerY}" r="${r2 + 8}" fill="${atom2Type === 'li' ? '#a855f7' : '#3b82f6'}" opacity="0.25" filter="url(#glow-halo)" />
+
+                <!-- 3D Chemical Bond Cylinder -->
+                <g filter="url(#atom-shadow)">
+                    <rect x="${atom1X}" y="${centerY - 6}" width="${distPx}" height="12" rx="6" fill="url(#bond-cylinder)" />
+                    <!-- Inner Energy Core Line -->
+                    <line x1="${atom1X + r1 - 2}" y1="${centerY}" x2="${atom2X - r2 + 2}" y2="${centerY}" 
+                          stroke="#ffffff" stroke-width="2" stroke-dasharray="4,3" opacity="0.85" />
+                </g>
+
+                <!-- Floating 3D Bond Distance Pill -->
+                <g transform="translate(${(width / 2)}, ${centerY - 34})" filter="url(#atom-shadow)">
+                    <rect x="-48" y="-12" width="96" height="24" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+                    <text x="0" y="4" text-anchor="middle" fill="#0f172a" font-size="11" font-family="Fira Code, monospace" font-weight="700">
+                        R = ${state.distance.toFixed(3)} Å
+                    </text>
+                </g>
+
+                <!-- Atom 1 3D Sphere -->
+                <g filter="url(#atom-shadow)">
+                    <circle cx="${atom1X}" cy="${centerY}" r="${r1}" fill="url(#sphere-${atom1Type})" />
+                    <!-- Specular Highlight Shine -->
+                    <ellipse cx="${atom1X - r1 * 0.32}" cy="${centerY - r1 * 0.32}" rx="${r1 * 0.35}" ry="${r1 * 0.22}" 
+                             fill="#ffffff" opacity="0.65" transform="rotate(-25 ${atom1X - r1 * 0.32} ${centerY - r1 * 0.32})" />
+                    <text x="${atom1X}" y="${centerY + 4}" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700" font-family="Inter, sans-serif" style="text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+                        ${mol.atoms[0]}
+                    </text>
+                </g>
+
+                <!-- Atom 2 3D Sphere -->
+                <g filter="url(#atom-shadow)">
+                    <circle cx="${atom2X}" cy="${centerY}" r="${r2}" fill="url(#sphere-${atom2Type})" />
+                    <!-- Specular Highlight Shine -->
+                    <ellipse cx="${atom2X - r2 * 0.32}" cy="${centerY - r2 * 0.32}" rx="${r2 * 0.35}" ry="${r2 * 0.22}" 
+                             fill="#ffffff" opacity="0.65" transform="rotate(-25 ${atom2X - r2 * 0.32} ${centerY - r2 * 0.32})" />
+                    <text x="${atom2X}" y="${centerY + 4}" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700" font-family="Inter, sans-serif" style="text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+                        ${mol.atoms[1]}
+                    </text>
+                </g>
             `;
         }
 
